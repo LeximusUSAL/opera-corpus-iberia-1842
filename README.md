@@ -201,14 +201,14 @@ El código de análisis y la web están disponibles para uso académico.
 
 ## 👤 Autores
 
-**Análisis y procesamiento:** María (Universidad de Salamanca)
+**Análisis y procesamiento:** LexiMus (Universidad de Salamanca)
 **Generado con:** Claude Code (Anthropic)
 
 ---
 
 ## 🔗 Enlaces
 
-- **Web del proyecto:** [https://leximususal.github.io/opera-corpus-iberia-1842/](https://leximususal.github.io/opera-corpus-iberia-1842/)
+- **Web del proyecto:** [https://leximususal.github.io/inicio/)
 - **Repositorio GitHub:** [https://github.com/LeximusUSAL/opera-corpus-iberia-1842](https://github.com/LeximusUSAL/opera-corpus-iberia-1842)
 - **Proyecto LexiMus:** Universidad de Salamanca
 
