@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis del Corpus de Ópera - Revista Iberia (1842)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #8B0000;
+            --secondary-color: #FFD700;
+            --background: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --text: #e0e0e0;
+            --text-light: #a0a0a0;
+            --border: #333;
+            --accent: #CD853F;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #5a0000);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(139, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '🎭';
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.1;
+            top: -2rem;
+            right: -2rem;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            color: var(--secondary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.3rem;
+            color: var(--text);
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: -3rem auto 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(139, 0, 0, 0.5);
+        }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 0.5rem 0;
+        }
+
+        .stat-card .label {
+            font-size: 1rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title .icon {
+            font-size: 2.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 2rem 0;
+        }
+
+        .chart-container.tall {
+            height: 600px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.3);
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: rgba(139, 0, 0, 0.1);
+        }
+
+        .rank {
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .frequency-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .frequency-bar .bar {
+            height: 20px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent));
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        .frequency-bar .number {
+            min-width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .tags-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, var(--primary-color), #5a0000);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid var(--accent);
+        }
+
+        .tag:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.6);
+        }
+
+        .interpretation-box {
+            background: rgba(139, 0, 0, 0.1);
+            border-left: 4px solid var(--secondary-color);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+        }
+
+        .interpretation-box h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .interpretation-box ul {
+            list-style: none;
+            padding-left: 1rem;
+        }
+
+        .interpretation-box li {
+            margin: 0.8rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .interpretation-box li::before {
+            content: '🎵';
+            position: absolute;
+            left: 0;
+        }
+
+        .footer {
+            background: var(--card-bg);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+            border-top: 3px solid var(--primary-color);
+        }
+
+        .footer p {
+            color: var(--text-light);
+            margin: 0.5rem 0;
+        }
+
+        .methodology {
+            background: rgba(205, 133, 63, 0.1);
+            border: 2px dashed var(--accent);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        .methodology h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎭 Análisis del Corpus de Ópera</h1>
+        <p class="subtitle">Revista Iberia (1842) • 34 Números Digitalizados</p>
+    </div>
+
+    <div class="stats-banner">
+        <div class="stat-card">
+            <div class="icon">📚</div>
+            <div class="number" id="totalArchivos">34</div>
+            <div class="label">Archivos Procesados</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">📝</div>
+            <div class="number" id="totalPalabras">0</div>
+            <div class="label">Palabras Totales</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">💬</div>
+            <div class="number" id="palabrasUnicas">0</div>
+            <div class="label">Palabras Únicas</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">🎼</div>
+            <div class="number" id="totalCompositores">0</div>
+            <div class="label">Compositores Citados</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- COMPOSITORES -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">🎼</span>
+                Compositores Más Citados
+            </h2>
+
+            <div class="chart-container tall">
+                <canvas id="compositoresChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <table id="compositoresTable">
+                    <thead>
+                        <tr>
+                            <th>Rango</th>
+                            <th>Compositor</th>
+                            <th>Menciones</th>
+                            <th>Frecuencia Relativa</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="interpretation-box">
+                <h3>🔍 Interpretación</h3>
+                <ul>
+                    <li><strong>Rossini domina el panorama operístico</strong> de 1842 con 78 menciones, reflejando su supremacía en los teatros españoles de la época.</li>
+                    <li><strong>Meyerbeer</strong> (52 menciones) representa la influencia de la <em>grand opéra</em> francesa en España.</li>
+                    <li><strong>Donizetti y Bellini</strong> demuestran el gusto por el bel canto italiano, mientras que <strong>Mozart</strong> mantiene su prestigio clásico.</li>
+                    <li>Compositores españoles como <strong>Saldoni y Carnicer</strong> aparecen en el top 10, evidenciando el intento de desarrollar una ópera nacional.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- CANTANTES -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">🎤</span>
+                Cantantes Más Mencionados
+            </h2>
+
+            <div class="chart-container">
+                <canvas id="cantantesChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <table id="cantantesTable">
+                    <thead>
+                        <tr>
+                            <th>Rango</th>
+                            <th>Cantante</th>
+                            <th>Menciones</th>
+                            <th>Distribución Visual</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="interpretation-box">
+                <h3>🔍 Interpretación</h3>
+                <ul>
+                    <li><strong>Rubini</strong> (76 menciones) fue el tenor más celebrado de la época, famoso por su interpretación rossiana.</li>
+                    <li><strong>Malibran</strong> (25 menciones) aparece como la prima donna más reconocida, leyenda del romanticismo vocal.</li>
+                    <li>La predominancia de cantantes italianos (<strong>Lablache, Tamburini, Ronconi</strong>) refleja la hegemonía italiana en el mundo operístico.</li>
+                    <li>El equilibrio entre voces masculinas y femeninas muestra la estructura de las compañías de ópera de la época.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- LÉXICO MUSICAL -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">📖</span>
+                Léxico Musical Operístico
+            </h2>
+
+            <div class="chart-container">
+                <canvas id="lexicoCategoriasChart"></canvas>
+            </div>
+
+            <div class="grid-2">
+                <div class="chart-container">
+                    <canvas id="generosChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="vocesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="interpretation-box">
+                <h3>🔍 Análisis del Vocabulario Musical</h3>
+                <ul>
+                    <li><strong>Voces</strong> (701 menciones) es la categoría más frecuente, indicando el enfoque en los intérpretes.</li>
+                    <li><strong>Elementos escénicos</strong> (565 menciones) reflejan la importancia del espectáculo teatral completo.</li>
+                    <li><strong>Expresión musical</strong> (543 menciones) muestra el vocabulario crítico y estético de la época.</li>
+                    <li>Los <strong>términos técnicos</strong> (469 menciones) evidencian un público conocedor y una crítica especializada.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- TEMAS PRINCIPALES -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">📊</span>
+                Temas Principales del Corpus
+            </h2>
+
+            <div class="chart-container">
+                <canvas id="temasChart"></canvas>
+            </div>
+
+            <div class="tags-cloud" id="temasCloud"></div>
+
+            <div class="interpretation-box">
+                <h3>🔍 Análisis Temático</h3>
+                <ul>
+                    <li><strong>Teatros</strong> (414 menciones) domina, centrándose en los espacios físicos de representación (Teatro del Príncipe, de la Cruz, etc.).</li>
+                    <li><strong>Público</strong> (255 menciones) refleja la importancia de la recepción y el juicio del auditorio.</li>
+                    <li><strong>Composición e interpretación</strong> (200 y 192 menciones) muestran el equilibrio entre obra y ejecución.</li>
+                    <li><strong>Nacionalidad</strong> (195 menciones) evidencia la conciencia de las escuelas musicales nacionales (italiana, francesa, española).</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PALABRAS FRECUENTES -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">💬</span>
+                Palabras Más Frecuentes (Top 30)
+            </h2>
+
+            <div class="chart-container tall">
+                <canvas id="palabrasChart"></canvas>
+            </div>
+        </section>
+
+        <!-- COLOCACIONES -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">🔗</span>
+                Colocaciones Frecuentes
+            </h2>
+
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 1rem;">📌 Bigramas (Pares de Palabras)</h3>
+                    <div class="chart-container">
+                        <canvas id="bigramasChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 1rem;">📌 Trigramas (Tres Palabras)</h3>
+                    <div class="chart-container">
+                        <canvas id="trigramasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interpretation-box">
+                <h3>🔍 Análisis de Colocaciones</h3>
+                <ul>
+                    <li>Las colocaciones revelan <strong>expresiones formulaicas</strong> de la crítica musical decimonónica.</li>
+                    <li>Frases como "teatro del", "ópera de", "música de" indican patrones recurrentes del discurso periodístico musical.</li>
+                    <li>Los trigramas muestran <strong>estructuras sintácticas típicas</strong> del análisis operístico de la época.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- METODOLOGÍA -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">⚙️</span>
+                Metodología de Análisis
+            </h2>
+
+            <div class="methodology">
+                <h4>🔬 Proceso de Análisis</h4>
+                <p><strong>1. Unificación del Corpus:</strong> Combinación de 34 archivos .txt sin pérdida de información ni duplicados.</p>
+                <p><strong>2. Procesamiento NLP:</strong> Análisis palabra por palabra con normalización Unicode y búsqueda de patrones.</p>
+                <p><strong>3. Extracción de Entidades:</strong> Identificación de compositores, cantantes y términos musicales mediante expresiones regulares.</p>
+                <p><strong>4. Análisis Estadístico:</strong> Conteo de frecuencias absolutas y relativas, clasificación por categorías.</p>
+                <p><strong>5. Visualización:</strong> Generación de gráficos interactivos con Chart.js y tablas comparativas.</p>
+                <p><strong>6. Interpretación Cualitativa:</strong> Contextualización histórica y musicológica de los hallazgos cuantitativos.</p>
+            </div>
+
+            <div class="interpretation-box">
+                <h3>📈 Criterios de Calidad</h3>
+                <ul>
+                    <li><strong>Precisión absoluta</strong> en conteos y clasificaciones.</li>
+                    <li><strong>Combinación cuantitativa-cualitativa</strong>: estadísticas + interpretación contextual.</li>
+                    <li><strong>Claridad visual</strong>: gráficos interactivos y tablas comparativas.</li>
+                    <li><strong>Rigor académico</strong>: metodología replicable y transparente.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- CONCLUSIONES -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="icon">🎯</span>
+                Conclusiones Generales
+            </h2>
+
+            <div class="interpretation-box">
+                <h3>🏛️ Hallazgos Principales</h3>
+                <ul>
+                    <li><strong>Hegemonía del repertorio italiano:</strong> Rossini, Donizetti y Bellini dominan la programación operística española de 1842.</li>
+                    <li><strong>Internacionalización del gusto:</strong> Presencia significativa de ópera francesa (Meyerbeer, Auber) y alemana (Mozart, Weber).</li>
+                    <li><strong>Centralidad de los intérpretes:</strong> Los cantantes (especialmente Rubini y Malibran) son tan importantes como los compositores.</li>
+                    <li><strong>Público conocedor:</strong> El vocabulario técnico y la terminología especializada indican una audiencia cultivada.</li>
+                    <li><strong>Teatros como centros culturales:</strong> La vida operística gira en torno a los teatros madrileños (Príncipe, Cruz).</li>
+                    <li><strong>Ópera nacional incipiente:</strong> Compositores españoles buscan establecer un repertorio nacional frente a la dominación italiana.</li>
+                    <li><strong>Crítica musical profesional:</strong> La revista Iberia demuestra un periodismo musical especializado y riguroso.</li>
+                </ul>
+            </div>
+
+            <div class="interpretation-box" style="border-left-color: var(--accent);">
+                <h3>🌟 Significado Histórico-Cultural</h3>
+                <p>Este corpus representa un <strong>testimonio único</strong> de la vida operística española en 1842, año crucial en la consolidación del género lírico en España. La revista Iberia documenta:</p>
+                <ul>
+                    <li>La <strong>recepción española</strong> del repertorio romántico europeo.</li>
+                    <li>Los <strong>gustos del público</strong> madrileño de mediados del siglo XIX.</li>
+                    <li>La <strong>formación de una identidad musical</strong> nacional en diálogo con Europa.</li>
+                    <li>El desarrollo del <strong>periodismo musical</strong> como género literario especializado.</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <div class="footer">
+        <p><strong>Análisis del Corpus de Ópera - Revista Iberia (1842)</strong></p>
+        <p>Proyecto de Humanidades Digitales | Universidad de Salamanca</p>
+        <p>Generado: Octubre 2025 | Datos: 72,933 palabras • 34 archivos • 9,737 palabras únicas</p>
+    </div>
+
+    <script>
+        // Cargar datos JSON
+        let datosAnalisis = null;
+
+        fetch('resultados_analisis_opera_iberia_1842.json')
+            .then(response => response.json())
+            .then(datos => {
+                datosAnalisis = datos;
+                inicializarDashboard(datos);
+            })
+            .catch(error => {
+                console.error('Error cargando datos:', error);
+            });
+
+        function inicializarDashboard(datos) {
+            // Actualizar estadísticas principales
+            document.getElementById('totalArchivos').textContent = datos.metadata.archivos_procesados;
+            document.getElementById('totalPalabras').textContent = datos.metadata.total_palabras.toLocaleString();
+            document.getElementById('palabrasUnicas').textContent = datos.metadata.palabras_unicas.toLocaleString();
+            document.getElementById('totalCompositores').textContent = Object.keys(datos.compositores).length;
+
+            // Crear visualizaciones
+            crearGraficoCompositores(datos.compositores);
+            crearGraficoCantantes(datos.cantantes);
+            crearGraficoLexicoCategorias(datos.lexico_musical);
+            crearGraficoGeneros(datos.lexico_musical.generos_operisticos);
+            crearGraficoVoces(datos.lexico_musical.voces);
+            crearGraficoTemas(datos.temas_principales);
+            crearGraficoPalabras(datos.palabras_frecuentes);
+            crearGraficoBigramas(datos.colocaciones.bigramas_top);
+            crearGraficoTrigramas(datos.colocaciones.trigramas_top);
+
+            // Crear tablas
+            crearTablaCompositores(datos.compositores);
+            crearTablaCantantes(datos.cantantes);
+
+            // Crear nube de temas
+            crearNubeTemas(datos.temas_principales);
+        }
+
+        function crearGraficoCompositores(compositores) {
+            const ctx = document.getElementById('compositoresChart').getContext('2d');
+            const top15 = Object.entries(compositores).slice(0, 15);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top15.map(([nombre, _]) => nombre),
+                    datasets: [{
+                        label: 'Menciones',
+                        data: top15.map(([_, count]) => count),
+                        backgroundColor: 'rgba(139, 0, 0, 0.8)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 15 Compositores por Frecuencia de Mención',
+                            color: '#FFD700',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: { color: '#e0e0e0', font: { size: 12 } },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoCantantes(cantantes) {
+            const ctx = document.getElementById('cantantesChart').getContext('2d');
+            const datos = Object.entries(cantantes).slice(0, 10);
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: datos.map(([nombre, _]) => nombre),
+                    datasets: [{
+                        data: datos.map(([_, count]) => count),
+                        backgroundColor: [
+                            '#8B0000', '#A52A2A', '#CD5C5C', '#DC143C',
+                            '#B22222', '#8B4513', '#A0522D', '#D2691E',
+                            '#CD853F', '#DAA520'
+                        ],
+                        borderColor: '#FFD700',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#e0e0e0', font: { size: 12 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribución de Cantantes Mencionados',
+                            color: '#FFD700',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoLexicoCategorias(lexico) {
+            const ctx = document.getElementById('lexicoCategoriasChart').getContext('2d');
+            const categorias = Object.entries(lexico).map(([categoria, terminos]) => {
+                return {
+                    categoria: categoria.replace(/_/g, ' ').toUpperCase(),
+                    total: Object.values(terminos).reduce((a, b) => a + b, 0)
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categorias.map(c => c.categoria),
+                    datasets: [{
+                        label: 'Total Menciones',
+                        data: categorias.map(c => c.total),
+                        backgroundColor: 'rgba(205, 133, 63, 0.8)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Distribución del Léxico Musical por Categorías',
+                            color: '#FFD700',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#e0e0e0', font: { size: 10 } },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoGeneros(generos) {
+            const ctx = document.getElementById('generosChart').getContext('2d');
+            const datos = Object.entries(generos).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+            new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: datos.map(([term, _]) => term),
+                    datasets: [{
+                        data: datos.map(([_, count]) => count),
+                        backgroundColor: [
+                            'rgba(139, 0, 0, 0.7)',
+                            'rgba(178, 34, 34, 0.7)',
+                            'rgba(205, 92, 92, 0.7)',
+                            'rgba(220, 20, 60, 0.7)',
+                            'rgba(139, 69, 19, 0.7)',
+                            'rgba(160, 82, 45, 0.7)',
+                            'rgba(205, 133, 63, 0.7)',
+                            'rgba(210, 105, 30, 0.7)',
+                            'rgba(218, 165, 32, 0.7)',
+                            'rgba(184, 134, 11, 0.7)'
+                        ],
+                        borderColor: '#FFD700',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#e0e0e0', font: { size: 10 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Géneros Operísticos',
+                            color: '#FFD700',
+                            font: { size: 14 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoVoces(voces) {
+            const ctx = document.getElementById('vocesChart').getContext('2d');
+            const datos = Object.entries(voces).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: datos.map(([term, _]) => term),
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: datos.map(([_, count]) => count),
+                        backgroundColor: 'rgba(139, 0, 0, 0.3)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FFD700',
+                        pointBorderColor: '#8B0000',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Tipos de Voces Mencionadas',
+                            color: '#FFD700',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' },
+                            pointLabels: { color: '#e0e0e0', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoTemas(temas) {
+            const ctx = document.getElementById('temasChart').getContext('2d');
+            const datosTemas = Object.entries(temas).map(([tema, palabras]) => {
+                return {
+                    tema: tema,
+                    total: Object.values(palabras).reduce((a, b) => a + b, 0)
+                };
+            }).sort((a, b) => b.total - a.total);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: datosTemas.map(t => t.tema.toUpperCase()),
+                    datasets: [{
+                        label: 'Menciones Totales',
+                        data: datosTemas.map(t => t.total),
+                        backgroundColor: [
+                            '#8B0000', '#A52A2A', '#B22222', '#DC143C',
+                            '#CD5C5C', '#8B4513', '#CD853F'
+                        ],
+                        borderColor: '#FFD700',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Temas Principales del Corpus',
+                            color: '#FFD700',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoPalabras(palabras) {
+            const ctx = document.getElementById('palabrasChart').getContext('2d');
+            const top30 = Object.entries(palabras).slice(0, 30);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top30.map(([palabra, _]) => palabra),
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: top30.map(([_, count]) => count),
+                        backgroundColor: 'rgba(139, 0, 0, 0.8)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 30 Palabras Más Frecuentes (sin stopwords)',
+                            color: '#FFD700',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: { color: '#e0e0e0', font: { size: 11 } },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoBigramas(bigramas) {
+            const ctx = document.getElementById('bigramasChart').getContext('2d');
+            const top15 = Object.entries(bigramas).slice(0, 15);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top15.map(([bg, _]) => bg),
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: top15.map(([_, count]) => count),
+                        backgroundColor: 'rgba(205, 133, 63, 0.8)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 15 Bigramas',
+                            color: '#FFD700',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: { color: '#e0e0e0', font: { size: 10 } },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficoTrigramas(trigramas) {
+            const ctx = document.getElementById('trigramasChart').getContext('2d');
+            const top15 = Object.entries(trigramas).slice(0, 15);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top15.map(([tg, _]) => tg),
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: top15.map(([_, count]) => count),
+                        backgroundColor: 'rgba(160, 82, 45, 0.8)',
+                        borderColor: 'rgba(255, 215, 0, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 15 Trigramas',
+                            color: '#FFD700',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#e0e0e0' },
+                            grid: { color: '#333' }
+                        },
+                        y: {
+                            ticks: { color: '#e0e0e0', font: { size: 10 } },
+                            grid: { color: '#333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearTablaCompositores(compositores) {
+            const tbody = document.querySelector('#compositoresTable tbody');
+            const total = Object.values(compositores).reduce((a, b) => a + b, 0);
+
+            Object.entries(compositores).forEach(([nombre, menciones], index) => {
+                const porcentaje = ((menciones / total) * 100).toFixed(2);
+                const row = `
+                    <tr>
+                        <td class="rank">${index + 1}</td>
+                        <td>${nombre}</td>
+                        <td><strong>${menciones}</strong></td>
+                        <td>${porcentaje}%</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function crearTablaCantantes(cantantes) {
+            const tbody = document.querySelector('#cantantesTable tbody');
+            const maxMenciones = Math.max(...Object.values(cantantes));
+
+            Object.entries(cantantes).forEach(([nombre, menciones], index) => {
+                const barWidth = (menciones / maxMenciones) * 100;
+                const row = `
+                    <tr>
+                        <td class="rank">${index + 1}</td>
+                        <td>${nombre}</td>
+                        <td><strong>${menciones}</strong></td>
+                        <td>
+                            <div class="frequency-bar">
+                                <div class="bar" style="width: ${barWidth}%"></div>
+                                <span class="number">${menciones}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function crearNubeTemas(temas) {
+            const container = document.getElementById('temasCloud');
+            const datosTemas = Object.entries(temas).map(([tema, palabras]) => {
+                return {
+                    tema: tema,
+                    total: Object.values(palabras).reduce((a, b) => a + b, 0)
+                };
+            }).sort((a, b) => b.total - a.total);
+
+            datosTemas.forEach(({tema, total}) => {
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                const fontSize = 0.9 + (total / 500);
+                tag.style.fontSize = `${fontSize}rem`;
+                tag.textContent = `${tema.toUpperCase()} (${total})`;
+                container.appendChild(tag);
+            });
+        }
+    </script>
+</body>
+</html>
