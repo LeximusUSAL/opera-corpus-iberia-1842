@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursos y Scripts - Análisis Corpus de Ópera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #8B0000;
+            --secondary-color: #B8860B;
+            --background: #F5F5DC;
+            --card-bg: #FFFFFF;
+            --text: #2C2C2C;
+            --text-light: #666666;
+            --border: #D3D3D3;
+            --accent: #8B4513;
+            --code-bg: #F8F8F8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #5a0000);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(139, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '📜';
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.1;
+            top: -2rem;
+            right: -2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #FFFFFF;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .breadcrumb {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            color: var(--text-light);
+            margin: 0 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .intro-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .intro-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .resource-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid var(--border);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(139, 0, 0, 0.2);
+        }
+
+        .resource-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .resource-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .resource-card .meta {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .resource-card .meta span {
+            background: var(--code-bg);
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .resource-card .description {
+            margin: 1rem 0;
+            color: var(--text);
+            line-height: 1.8;
+        }
+
+        .resource-card ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .resource-card li {
+            margin: 0.5rem 0;
+            color: var(--text);
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .download-btn:hover {
+            background: #5a0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+        }
+
+        .code-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+        }
+
+        .code-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+        }
+
+        .usage-box {
+            background: rgba(139, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+        }
+
+        .usage-box h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.2rem;
+        }
+
+        .footer {
+            background: var(--card-bg);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+            border-top: 3px solid var(--primary-color);
+        }
+
+        .footer p {
+            color: var(--text-light);
+            margin: 0.5rem 0;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .resource-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .highlight h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📜 Recursos y Scripts del Proyecto</h1>
+        <p class="subtitle">Análisis del Corpus de Ópera - Revista Iberia (1842)</p>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="index.html">🏠 Inicio</a>
+        <span>›</span>
+        <strong>Recursos y Scripts</strong>
+    </div>
+
+    <div class="container">
+        <div class="intro-section">
+            <h2>🔧 Herramientas del Proyecto</h2>
+            <p>
+                Esta página proporciona acceso completo a todos los scripts, datos y recursos utilizados en el análisis
+                del corpus de ópera de la Revista Iberia (1842). Todos los materiales están disponibles para descarga,
+                reutilización y adaptación a otros proyectos de Humanidades Digitales.
+            </p>
+            <p style="margin-top: 1rem;">
+                <span class="badge">Open Source</span>
+                <span class="badge">Python 3</span>
+                <span class="badge">NLP</span>
+                <span class="badge">Chart.js</span>
+                <span class="badge">HTML5</span>
+            </p>
+        </div>
+
+        <div class="resource-grid">
+            <!-- Script Python -->
+            <div class="resource-card">
+                <div class="icon">🐍</div>
+                <h3>Script de Análisis (Python)</h3>
+                <div class="meta">
+                    <span>📦 16 KB</span>
+                    <span>🔧 Python 3.7+</span>
+                </div>
+                <div class="description">
+                    Analizador completo del corpus con procesamiento NLP palabra por palabra. Identifica compositores,
+                    cantantes, léxico musical y temas principales.
+                </div>
+                <ul>
+                    <li>✓ 373 líneas de código</li>
+                    <li>✓ Clase AnalizadorCorpusOpera</li>
+                    <li>✓ 12 métodos de análisis</li>
+                    <li>✓ Exportación a JSON</li>
+                    <li>✓ Solo usa módulos estándar</li>
+                </ul>
+                <a href="analizador_corpus_opera.py" download class="download-btn">⬇️ Descargar Script Python</a>
+            </div>
+
+            <!-- JSON de Resultados -->
+            <div class="resource-card">
+                <div class="icon">📊</div>
+                <h3>Datos del Análisis (JSON)</h3>
+                <div class="meta">
+                    <span>📦 10 KB</span>
+                    <span>🔧 UTF-8</span>
+                </div>
+                <div class="description">
+                    Resultados completos del análisis en formato JSON estructurado. Incluye todas las frecuencias,
+                    categorías y estadísticas del corpus.
+                </div>
+                <ul>
+                    <li>✓ Metadata del corpus</li>
+                    <li>✓ 24 compositores + frecuencias</li>
+                    <li>✓ 14 cantantes + menciones</li>
+                    <li>✓ 8 categorías léxicas</li>
+                    <li>✓ Bigramas y trigramas</li>
+                </ul>
+                <a href="resultados_analisis_opera_iberia_1842.json" download class="download-btn">⬇️ Descargar Datos JSON</a>
+            </div>
+
+            <!-- Web HTML -->
+            <div class="resource-card">
+                <div class="icon">🌐</div>
+                <h3>Dashboard Web (HTML)</h3>
+                <div class="meta">
+                    <span>📦 43 KB</span>
+                    <span>🔧 HTML5</span>
+                </div>
+                <div class="description">
+                    Página web completa con visualizaciones interactivas usando Chart.js. Dashboard responsive con
+                    9 gráficos, tablas y secciones interpretativas.
+                </div>
+                <ul>
+                    <li>✓ 1,549 líneas de código</li>
+                    <li>✓ CSS3 + JavaScript ES6</li>
+                    <li>✓ Chart.js 4.4.0</li>
+                    <li>✓ Diseño responsive</li>
+                    <li>✓ Sin dependencias locales</li>
+                </ul>
+                <a href="index.html" download class="download-btn">⬇️ Descargar Web HTML</a>
+            </div>
+        </div>
+
+        <!-- Sección de Uso -->
+        <div class="code-section">
+            <h2>💻 Guía de Uso Rápido</h2>
+
+            <div class="usage-box">
+                <h4>🐍 Script Python</h4>
+                <div class="code-block">
+                    <pre><code># 1. Descargar el script
+# 2. Configurar el directorio del corpus (línea 373)
+directorio_corpus = "/ruta/a/tus/archivos/txt"
+
+# 3. Ejecutar
+python3 analizador_corpus_opera.py
+
+# 4. Se genera automáticamente:
+# resultados_analisis_opera_iberia_1842.json</code></pre>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h4>📊 Leer datos JSON</h4>
+                <div class="code-block">
+                    <pre><code># Python
+import json
+with open('resultados_analisis_opera_iberia_1842.json', 'r', encoding='utf-8') as f:
+    datos = json.load(f)
+
+# Top 5 compositores
+top5 = list(datos['compositores'].items())[:5]
+for compositor, menciones in top5:
+    print(f"{compositor}: {menciones}")
+
+# R
+library(jsonlite)
+datos <- fromJSON('resultados_analisis_opera_iberia_1842.json')
+compositores <- datos$compositores</code></pre>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h4>🌐 Usar Web HTML</h4>
+                <div class="code-block">
+                    <pre><code># Uso local:
+1. Descargar index.html y resultados_analisis_opera_iberia_1842.json
+2. Colocar ambos archivos en la misma carpeta
+3. Abrir index.html en el navegador
+
+# Publicar en servidor web:
+1. Subir ambos archivos al servidor
+2. Acceder vía URL del servidor
+3. Funciona en cualquier hosting estático</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estructura del Script -->
+        <div class="code-section">
+            <h2>🏗️ Estructura del Script Python</h2>
+
+            <div class="highlight">
+                <h3>Clase: AnalizadorCorpusOpera</h3>
+                <p><strong>Métodos principales:</strong></p>
+                <ul>
+                    <li><code>__init__(directorio_base)</code> - Inicialización con diccionarios de entidades</li>
+                    <li><code>leer_corpus_completo()</code> - Lee y unifica 34 archivos .txt</li>
+                    <li><code>normalizar_texto(texto)</code> - Normalización Unicode (NFC)</li>
+                    <li><code>buscar_menciones(patrones, texto)</code> - Búsqueda con regex</li>
+                    <li><code>analizar_compositores()</code> - Identifica 24 compositores</li>
+                    <li><code>analizar_cantantes()</code> - Identifica 14 cantantes</li>
+                    <li><code>analizar_lexico_musical()</code> - Clasifica en 8 categorías</li>
+                    <li><code>analizar_temas_principales()</code> - Identifica 7 áreas temáticas</li>
+                    <li><code>extraer_bigramas_trigramas()</code> - Colocaciones frecuentes</li>
+                    <li><code>generar_analisis_completo()</code> - Ejecuta análisis completo</li>
+                    <li><code>guardar_resultados_json()</code> - Exporta resultados</li>
+                    <li><code>imprimir_resumen()</code> - Muestra resumen en consola</li>
+                </ul>
+            </div>
+
+            <div class="usage-box">
+                <h4>📋 Diccionarios de Entidades</h4>
+                <p>El script incluye diccionarios predefinidos para:</p>
+                <ul>
+                    <li><strong>Compositores</strong>: 24 figuras (Rossini, Donizetti, Mozart, etc.)</li>
+                    <li><strong>Cantantes</strong>: 14 intérpretes (Rubini, Malibran, Lablache, etc.)</li>
+                    <li><strong>Léxico Musical</strong>: 150+ términos en 8 categorías</li>
+                    <li><strong>Temas</strong>: 7 áreas temáticas (teatros, público, crítica, etc.)</li>
+                </ul>
+                <p style="margin-top: 1rem; color: var(--text-light);">
+                    <em>Todos estos diccionarios son fácilmente adaptables a otros corpus musicales.</em>
+                </p>
+            </div>
+        </div>
+
+        <!-- Adaptación a otros proyectos -->
+        <div class="code-section">
+            <h2>🔄 Adaptar a Tu Proyecto</h2>
+
+            <div class="usage-box">
+                <h4>1️⃣ Cambiar el corpus de entrada</h4>
+                <p>Edita la línea 373 del script Python:</p>
+                <div class="code-block">
+                    <pre><code>directorio_corpus = "/tu/ruta/a/archivos/txt"</code></pre>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h4>2️⃣ Modificar entidades a buscar</h4>
+                <p>Edita los diccionarios en el método <code>__init__</code>:</p>
+                <div class="code-block">
+                    <pre><code># Ejemplo: añadir compositores
+self.compositores = {
+    'Bach': ['Bach', 'Johann Sebastian Bach', 'J.S. Bach'],
+    'Beethoven': ['Beethoven', 'Ludwig van Beethoven'],
+    'Brahms': ['Brahms', 'Johannes Brahms'],
+    # ... añade los tuyos
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h4>3️⃣ Agregar nuevas categorías léxicas</h4>
+                <div class="code-block">
+                    <pre><code># En self.lexico_musical
+'nueva_categoria': [
+    'término1', 'término2', 'término3'
+]</code></pre>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h4>4️⃣ Personalizar el dashboard web</h4>
+                <p>Edita las variables CSS en index.html (líneas 15-24):</p>
+                <div class="code-block">
+                    <pre><code>:root {
+    --primary-color: #8B0000;    /* Tu color principal */
+    --background: #F5F5DC;        /* Color de fondo */
+    --text: #2C2C2C;              /* Color del texto */
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requisitos -->
+        <div class="highlight">
+            <h3>⚙️ Requisitos Técnicos</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <h4 style="color: var(--accent); margin-bottom: 0.5rem;">Script Python</h4>
+                    <ul>
+                        <li>Python 3.7 o superior</li>
+                        <li>Módulos estándar incluidos</li>
+                        <li>Sin instalación de paquetes</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: var(--accent); margin-bottom: 0.5rem;">Web HTML</h4>
+                    <ul>
+                        <li>Navegador moderno (2020+)</li>
+                        <li>JavaScript habilitado</li>
+                        <li>Chart.js (carga desde CDN)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: var(--accent); margin-bottom: 0.5rem;">Datos JSON</h4>
+                    <ul>
+                        <li>Cualquier editor de texto</li>
+                        <li>Compatible con Python, R, JS</li>
+                        <li>Importable en Excel/Sheets</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Repositorio GitHub -->
+        <div class="highlight" style="text-align: center;">
+            <h3>📦 Repositorio Completo en GitHub</h3>
+            <p style="margin: 1rem 0;">
+                Todos los archivos están disponibles en el repositorio oficial del proyecto.
+            </p>
+            <a href="https://github.com/LeximusUSAL/opera-corpus-iberia-1842"
+               target="_blank"
+               class="download-btn"
+               style="margin: 1rem;">
+                🔗 Ver en GitHub
+            </a>
+        </div>
+
+        <!-- Licencia y Cita -->
+        <div class="code-section">
+            <h2>📚 Licencia y Cita</h2>
+
+            <div class="usage-box">
+                <h4>📖 Cita Sugerida</h4>
+                <p>Si utilizas estos recursos en tu investigación, por favor cita:</p>
+                <div class="code-block">
+                    <pre><code>Prensa musical e Inteligencia Artificial. Proyecto LexiMus: Léxico y
+ontología de la música en español (PID2022-139589NB-C33), Universidad
+de Salamanca. Disponible en: https://LeximusUSAL.github.io/inicio</code></pre>
+                </div>
+            </div>
+
+            <div class="usage-box">
+                <h4>💰 Financiación</h4>
+                <p>
+                    Proyecto financiado por el <strong>Ministerio de Ciencia e Innovación (MICIU/AEI)</strong>
+                    y <strong>Fondos FEDER</strong>.
+                </p>
+                <p style="margin-top: 1rem;">
+                    © 2025 Universidad de Salamanca
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>Recursos del Proyecto - Análisis del Corpus de Ópera</strong></p>
+        <p>
+            <a href="index.html">← Volver al Análisis Principal</a> |
+            <a href="https://LeximusUSAL.github.io/inicio" target="_blank">Proyecto LexiMus</a> |
+            <a href="https://github.com/LeximusUSAL/opera-corpus-iberia-1842" target="_blank">GitHub</a>
+        </p>
+        <p style="margin-top: 1rem;">
+            Universidad de Salamanca • Instituto Complutense de Ciencias Musicales • Universidad de La Rioja
+        </p>
+    </div>
+</body>
+</html>
